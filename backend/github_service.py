@@ -32,23 +32,39 @@ def get_repo_statistics(username):
 
     languages = {}
 
+    most_starred_repo = None
+    max_stars = -1
+
     for repo in repos:
 
-        total_stars += repo["stargazers_count"]
+        stars = repo["stargazers_count"]
+        forks = repo["forks_count"]
 
-        total_forks += repo["forks_count"]
+        total_stars += stars
+        total_forks += forks
 
         lang = repo["language"]
 
         if lang:
+            languages[lang] = languages.get(lang, 0) + 1
 
-            if lang not in languages:
-                languages[lang] = 0
+        if stars > max_stars:
+            max_stars = stars
+            most_starred_repo = repo["name"]
 
-            languages[lang] += 1
+    top_language = None
+
+    if languages:
+        top_language = max(
+            languages,
+            key=languages.get
+        )
 
     return {
+        "repository_count": len(repos),
         "stars": total_stars,
         "forks": total_forks,
-        "languages": languages
+        "languages": languages,
+        "top_language": top_language,
+        "most_starred_repo": most_starred_repo
     }
