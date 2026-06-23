@@ -69,7 +69,6 @@ def dashboard(username: str):
         profile["followers"]
     )
 
-    # Save analytics snapshot
     db = SessionLocal()
 
     record = AnalyticsHistory(
@@ -123,3 +122,45 @@ def history(username: str):
         })
 
     return result
+
+
+@app.get("/summary/{username}")
+def summary(username: str):
+
+    profile = get_user_profile(username)
+
+    repo_stats = get_repo_statistics(username)
+
+    if profile is None or repo_stats is None:
+        return {
+            "error": "User not found"
+        }
+
+    score = calculate_score(
+        profile["repos"],
+        repo_stats["stars"],
+        profile["followers"]
+    )
+
+    db = SessionLocal()
+
+    snapshot_count = (
+        db.query(AnalyticsHistory)
+        .filter(
+            AnalyticsHistory.username == username
+        )
+        .count()
+    )
+
+    db.close()
+
+    return {
+        "developer_score": score,
+        "repositories": profile["repos"],
+        "followers": profile["followers"],
+        "stars": repo_stats["stars"],
+        "forks": repo_stats["forks"],
+        "top_language": repo_stats["top_language"],
+        "most_starred_repo": repo_stats["most_starred_repo"],
+        "snapshots_stored": snapshot_count
+    }
