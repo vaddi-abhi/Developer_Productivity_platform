@@ -1,31 +1,23 @@
 from fastapi import APIRouter
 from sqlalchemy import desc
 
-from database.connection import (
-    SessionLocal
-)
+from database.connection import SessionLocal
 
-from models.analytics import (
-    AnalyticsHistory
-)
+from models.analytics import AnalyticsHistory
 
 from services.github_service import (
     get_user_profile,
     get_repo_statistics
 )
 
-from services.score_service import (
-    calculate_score
-)
+from services.score_service import calculate_score
 
 router = APIRouter()
 
 
 @router.get("/")
 def home():
-    return {
-        "message": "DevInsight Running"
-    }
+    return {"message": "DevInsight Running"}
 
 
 @router.get("/github/{username}")
@@ -34,9 +26,7 @@ def github_profile(username: str):
     profile = get_user_profile(username)
 
     if profile is None:
-        return {
-            "error": "User not found"
-        }
+        return {"error": "User not found"}
 
     return profile
 
@@ -47,9 +37,7 @@ def repo_stats(username: str):
     stats = get_repo_statistics(username)
 
     if stats is None:
-        return {
-            "error": "User not found"
-        }
+        return {"error": "User not found"}
 
     return stats
 
@@ -58,18 +46,16 @@ def repo_stats(username: str):
 def dashboard(username: str):
 
     profile = get_user_profile(username)
-
     repo_stats = get_repo_statistics(username)
 
     if profile is None or repo_stats is None:
-        return {
-            "error": "User not found"
-        }
+        return {"error": "User not found"}
 
     score = calculate_score(
         profile["repos"],
         repo_stats["stars"],
-        profile["followers"]
+        profile["followers"],
+        repo_stats["language_count"]
     )
 
     db = SessionLocal()
@@ -127,6 +113,45 @@ def history(username: str):
 
 
 @router.get("/summary/{username}")
+def summary(username: str):
+
+    profile = get_user_profile(username)
+    repo_stats = get_repo_statistics(username)
+
+    if profile is None or repo_stats is None:
+        return {"error": "User not found"}
+
+    score = calculate_score(
+        profile["repos"],
+        repo_stats["stars"],
+        profile["followers"],
+        repo_stats["language_count"]
+    )
+
+    db = SessionLocal()
+
+    snapshot_count = (
+        db.query(AnalyticsHistory)
+        .filter(
+            AnalyticsHistory.username == username
+        )
+        .count()
+    )
+
+    db.close()
+
+    return {
+        "developer_score": score,
+        "repositories": profile["repos"],
+        "followers": profile["followers"],
+        "stars": repo_stats["stars"],
+        "forks": repo_stats["forks"],
+        "top_language": repo_stats["top_language"],
+        "most_starred_repo": repo_stats["most_starred_repo"],
+        "snapshots_stored": snapshot_count
+    }
+
+
 @router.get("/growth/{username}")
 def growth(username: str):
 
@@ -164,49 +189,45 @@ def growth(username: str):
     return {
         "first_score": first_score,
         "latest_score": latest_score,
-        "growth_percent": round(
-            growth_percent,
-            2
-        ),
+        "growth_percent": round(growth_percent, 2),
         "snapshots": len(records)
     }
-def summary(username: str):
+
+
+@router.get("/score-breakdown/{username}")
+def score_breakdown(username: str):
 
     profile = get_user_profile(username)
-
     repo_stats = get_repo_statistics(username)
 
     if profile is None or repo_stats is None:
-        return {
-            "error": "User not found"
-        }
+        return {"error": "User not found"}
 
-    score = calculate_score(
-        profile["repos"],
-        repo_stats["stars"],
-        profile["followers"]
+    repo_score = min(profile["repos"] * 2, 40)
+
+    star_score = min(repo_stats["stars"], 20)
+
+    follower_score = min(
+        profile["followers"] // 5,
+        15
     )
 
-    db = SessionLocal()
-
-    snapshot_count = (
-        db.query(AnalyticsHistory)
-        .filter(
-            AnalyticsHistory.username == username
-        )
-        .count()
+    diversity_score = min(
+        repo_stats["language_count"] * 3,
+        15
     )
 
-    db.close()
+    total_score = (
+        repo_score
+        + star_score
+        + follower_score
+        + diversity_score
+    )
 
     return {
-        "developer_score": score,
-        "repositories": profile["repos"],
-        "followers": profile["followers"],
-        "stars": repo_stats["stars"],
-        "forks": repo_stats["forks"],
-        "top_language": repo_stats["top_language"],
-        "most_starred_repo": repo_stats["most_starred_repo"],
-        "snapshots_stored": snapshot_count
+        "repository_score": repo_score,
+        "star_score": star_score,
+        "follower_score": follower_score,
+        "diversity_score": diversity_score,
+        "total_score": total_score
     }
-    

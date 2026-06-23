@@ -16,6 +16,7 @@ def get_user_profile(username):
         "followers": data.get("followers"),
         "following": data.get("following")
     }
+
 def get_repo_statistics(username):
 
     url = f"https://api.github.com/users/{username}/repos"
@@ -60,11 +61,14 @@ def get_repo_statistics(username):
             key=languages.get
         )
 
+    language_count = len(languages)
+
     return {
         "repository_count": len(repos),
         "stars": total_stars,
         "forks": total_forks,
         "languages": languages,
+        "language_count": language_count,
         "top_language": top_language,
         "most_starred_repo": most_starred_repo
     }
