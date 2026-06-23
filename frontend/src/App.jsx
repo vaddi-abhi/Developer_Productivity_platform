@@ -1,11 +1,16 @@
 import { useState } from "react";
 import api from "./services/api";
 import StatCard from "./components/StatCard";
+import HistoryChart from "./components/HistoryChart";
+import ScoreBreakdownChart
+from "./components/ScoreBreakdownChart";
 
 function App() {
   const [username, setUsername] = useState("");
   const [data, setData] = useState(null);
 const [growth, setGrowth] = useState(null);
+const [history, setHistory] = useState([]);
+const [breakdown, setBreakdown] = useState(null);
 
   const fetchSummary = async () => {
   try {
@@ -14,11 +19,25 @@ const [growth, setGrowth] = useState(null);
       await api.get(
         `/summary/${username}`
       );
+      const breakdownResponse =
+  await api.get(
+    `/score-breakdown/${username}`
+  );
 
+setBreakdown(
+  breakdownResponse.data
+);
     setData(
       summaryResponse.data
     );
+    const historyResponse =
+  await api.get(
+    `/history/${username}`
+  );
 
+    setHistory(
+      historyResponse.data
+    );
     const growthResponse =
       await api.get(
         `/growth/${username}`
@@ -90,6 +109,30 @@ const [growth, setGrowth] = useState(null);
       value={growth.snapshots}
     />
   </>
+)}
+  {history.length > 0 && (
+  <div style={{ marginTop: "40px" }}>
+    <h2>Developer Score Trend</h2>
+
+    <HistoryChart
+      data={history}
+    />
+    {breakdown && (
+  <div
+    style={{
+      marginTop: "50px"
+    }}
+  >
+    <h2>
+      Developer Score Breakdown
+    </h2>
+
+    <ScoreBreakdownChart
+      data={breakdown}
+    />
+  </div>
+)}
+  </div>
 )}
     </div>
 
