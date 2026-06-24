@@ -5,6 +5,8 @@ def get_user_profile(username):
 
     response = requests.get(url)
 
+    
+
     if response.status_code != 200:
         return None
 
@@ -14,7 +16,9 @@ def get_user_profile(username):
         "name": data.get("name"),
         "repos": data.get("public_repos"),
         "followers": data.get("followers"),
-        "following": data.get("following")
+        "following": data.get("following"),
+        "avatar": data.get("avatar_url"),
+        "github_url": data.get("html_url")
     }
 
 def get_repo_statistics(username):

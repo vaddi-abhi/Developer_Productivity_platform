@@ -1,3 +1,4 @@
+
 from sqlalchemy import (
     Column,
     Integer,
@@ -36,3 +37,5 @@ class AnalyticsHistory(Base):
         DateTime,
         default=datetime.utcnow
     )
+
+   

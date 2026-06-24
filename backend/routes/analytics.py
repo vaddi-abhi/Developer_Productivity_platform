@@ -1,6 +1,7 @@
 from fastapi import APIRouter
 from sqlalchemy import desc
 
+
 from database.connection import SessionLocal
 
 from models.analytics import AnalyticsHistory
@@ -11,6 +12,8 @@ from services.github_service import (
 )
 
 from services.score_service import calculate_score
+
+from services.analytics_service import build_dashboard
 
 router = APIRouter()
 
@@ -231,3 +234,22 @@ def score_breakdown(username: str):
         "diversity_score": diversity_score,
         "total_score": total_score
     }
+
+
+@router.get("/analytics")
+def analytics(
+    github: str,
+    cf: str = ""
+):
+
+    dashboard_data = build_dashboard(
+    github,
+    cf
+)
+
+    if dashboard_data is None:
+        return {
+            "error": "User not found"
+        }
+
+    return dashboard_data
