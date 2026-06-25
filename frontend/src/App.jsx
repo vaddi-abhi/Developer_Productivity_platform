@@ -1,397 +1,154 @@
 import { useState } from "react";
 import api from "./services/api";
-import StatCard from "./components/StatCard";
+
+import SearchBar from "./components/SearchBar";
+import ProfileCard from "./components/ProfileCard";
+import DashboardStats from "./components/DashboardStats";
+import CodeforcesCard from "./components/CodeforcesCard";
+import LeetCodeCard from "./components/LeetCodeCard";
+import RepositoryTable from "./components/RepositoryTable";
 import HistoryChart from "./components/HistoryChart";
-import ScoreBreakdownChart
-from "./components/ScoreBreakdownChart";
+import ScoreBreakdownChart from "./components/ScoreBreakdownChart";
 
 function App() {
-  const [codeforces, setCodeforces] =useState(null);
-const [githubUsername, setGithubUsername] = useState("");
-const [cfHandle, setCfHandle] = useState("");
+  const [githubUsername, setGithubUsername] = useState("");
+  const [cfHandle, setCfHandle] = useState("");
+  const [leetcodeHandle, setLeetcodeHandle] = useState("");
+
+  const [leetcode, setLeetcode] = useState(null);
+
   const [data, setData] = useState(null);
-const [growth, setGrowth] = useState(null);
-const [history, setHistory] = useState([]);
-const [breakdown, setBreakdown] = useState(null);
-const [loading, setLoading] = useState(false);
+  const [growth, setGrowth] = useState(null);
+  const [history, setHistory] = useState([]);
+  const [breakdown, setBreakdown] = useState(null);
+  const [repositories, setRepositories] = useState([]);
+  const [codeforces, setCodeforces] = useState(null);
 
-const fetchSummary = async () => {
+  const [loading, setLoading] = useState(false);
 
-  try {
+  const fetchSummary = async () => {
 
-    setLoading(true);
+    if (!githubUsername.trim()) {
+      alert("Please enter a GitHub username.");
+      return;
+    }
 
-    const response = await api.get(
-  `/analytics?github=${githubUsername}&cf=${cfHandle}`
-);
+    try {
 
-const analytics =
-  response.data;
+      setLoading(true);
 
-    setData(
-      analytics.summary
-    );
+      const { data: analytics } = await api.get(
+        `/analytics?github=${githubUsername}&cf=${cfHandle}&leetcode=${leetcodeHandle}`
+      );
 
-    setGrowth(
-      analytics.growth
-    );
+      setData(analytics.summary);
+      setGrowth(analytics.growth);
+      setHistory(analytics.history);
+      setBreakdown(analytics.breakdown);
+      setCodeforces(analytics.codeforces);
+      setLeetcode(
+        analytics.leetcode
+      );
 
-    setHistory(
-      analytics.history
-    );
+      const { data: repos } = await api.get(
+        `/repositories/${githubUsername}`
+      );
 
-    setBreakdown(
-      analytics.breakdown
-    );
+      setRepositories(repos);
 
-    setCodeforces(
-      analytics.codeforces
-    );
+    } catch (error) {
 
-  } catch (error) {
+      console.error(error);
 
-    console.error(error);
+      setData(null);
+      setGrowth(null);
+      setHistory([]);
+      setBreakdown(null);
+      setRepositories([]);
+      setCodeforces(null);
 
-    alert("User not found");
+      alert("User not found");
 
-  } finally {
+    } finally {
 
-    setLoading(false);
+      setLoading(false);
 
-  }
-};
+    }
 
- /* return (
-    <div style={{ padding: "30px" }}>
-      <h1>DevInsight Dashboard</h1>
+  };
 
-      <input
-        type="text"
-        placeholder="GitHub Username"
-        value={username}
-        onChange={(e) => setUsername(e.target.value)}
-      />
-
-      <button onClick={fetchSummary}>
-        Analyze
-      </button>
-      {loading && (
-  <h3>Loading analytics...</h3>
-)}
-
-      {data && (
-  <>
-    <div
-      style={{
-        display: "flex",
-        flexWrap: "wrap",
-        gap: "10px",
-        marginTop: "20px"
-      }}
-    >
-      <StatCard
-        title="Developer Score"
-        value={data.developer_score}
-      />
-
-      <StatCard
-        title="Repositories"
-        value={data.repositories}
-      />
-
-      <StatCard
-        title="Followers"
-        value={data.followers}
-      />
-
-      <StatCard
-        title="Stars"
-        value={data.stars}
-      />
-      {growth && (
-  <>
-    <StatCard
-      title="Growth %"
-      value={growth.growth_percent}
-    />
-
-    <StatCard
-      title="Snapshots"
-      value={growth.snapshots}
-    />
-  </>
-)}
-  {history.length > 0 && (
-  <div style={{ marginTop: "40px" }}>
-    <h2>Developer Score Trend</h2>
-
-    <HistoryChart
-      data={history}
-    />
-    {breakdown && (
-  <div
-    style={{
-      marginTop: "50px"
-    }}
-  >
-    <h2>
-      Developer Score Breakdown
-    </h2>
-
-    <ScoreBreakdownChart
-      data={breakdown}
-    />
-  </div>
-)}
-  </div>
-)}
-    </div>
-
-    <div style={{ marginTop: "20px" }}>
-      <h3>Top Language</h3>
-      <p>{data.top_language}</p>
-
-      <h3>Most Starred Repo</h3>
-      <p>{data.most_starred_repo}</p>
-
-      <h3>Snapshots Stored</h3>
-      <p>{data.snapshots_stored}</p>
-    </div>
-  </>
-)}
-    </div>
-  );*/
   return (
-  <div className="min-h-screen bg-slate-900 text-white">
+    <div className="min-h-screen bg-slate-900 text-white">
 
-    <div className="max-w-7xl mx-auto px-8 py-8">
+      <div className="max-w-7xl mx-auto px-8 py-8">
 
-      {/* Header */}
-      <div className="mb-10">
-        <h1 className="text-5xl font-bold">
-          DevInsight
-        </h1>
+        {/* Header */}
 
-        <p className="text-slate-400 mt-2">
-          Analyze Your Developer Journey
-        </p>
-      </div>
+        <div className="mb-10">
 
-      {/* Search */}
-      <div className="flex gap-4 mb-10">
+          <h1 className="text-5xl font-bold">
+            DevInsight
+          </h1>
 
-        <div className="flex flex-col gap-4 mb-10">
+          <p className="text-slate-400 mt-2">
+            Analyze Your Developer Journey
+          </p>
 
-  <input
-    type="text"
-    placeholder="GitHub Username"
-    value={githubUsername}
-    onChange={(e) =>
-      setGithubUsername(e.target.value)
-    }
-    className="
-      px-4 py-3
-      rounded-xl
-      bg-slate-800
-      border border-slate-700
-      w-96
-    "
-  />
+        </div>
 
-  <input
-    type="text"
-    placeholder="Codeforces Handle"
-    value={cfHandle}
-    onChange={(e) =>
-      setCfHandle(e.target.value)
-    }
-    className="
-      px-4 py-3
-      rounded-xl
-      bg-slate-800
-      border border-slate-700
-      w-96
-    "
-  />
+        {/* Search */}
 
-  <button
-    onClick={fetchSummary}
-    className="
-      px-6 py-3
-      rounded-xl
-      bg-blue-600
-      hover:bg-blue-700
-      w-40
-    "
-  >
-    Analyze
-  </button>
+        <SearchBar
+          githubUsername={githubUsername}
+          setGithubUsername={setGithubUsername}
+          cfHandle={cfHandle}
+          setCfHandle={setCfHandle}
+          leetcodeHandle={leetcodeHandle}
+          setLeetcodeHandle={setLeetcodeHandle}
+          fetchSummary={fetchSummary}
+          loading={loading}
+        />
 
-</div>
+        {/* Loading */}
 
-       
+        {loading && (
+          <h2 className="text-xl mb-8">
+            Loading Analytics...
+          </h2>
+        )}
 
-      </div>
+        {/* Profile */}
 
-      {/* Loading */}
-      {loading && (
-        <h2 className="text-xl mb-8">
-          Loading Analytics...
-        </h2>
-      )}
+        <ProfileCard
+          data={data}
+          githubUsername={githubUsername}
+        />
 
-      {data && (
-  <div
-    className="
-      bg-slate-800
-      border border-slate-700
-      rounded-2xl
-      p-6
-      mb-8
-      flex
-      items-center
-      gap-6
-    "
-  >
-    <img
-      src={data.avatar}
-      alt="GitHub Avatar"
-      className="w-24 h-24 rounded-full"
-    />
+        {/* Dashboard Stats */}
 
-    <div>
-      <h2 className="text-3xl font-bold">
-        {githubUsername}
-      </h2>
+        {data && (
+          <DashboardStats
+            data={data}
+            growth={growth}
+          />
+        )}
 
-      <a
-        href={data.github_url}
-        target="_blank"
-        rel="noreferrer"
-        className="text-blue-400"
-      >
-        View GitHub Profile
-      </a>
-    </div>
-  </div>
-)}
+        {/* Codeforces */}
 
-      
+        <CodeforcesCard
+          codeforces={codeforces}
+        />
 
+        {/* LeetCode */}
 
-      {/* Cards */}
-      {data && (
-        <>
-          <div
-            className="
-              grid
-              grid-cols-1
-              md:grid-cols-3
-              lg:grid-cols-6
-              gap-4
-              mb-10
-            "
-          >
-            <StatCard
-              title="Developer Score"
-              value={data.developer_score}
-            />
+        <LeetCodeCard
+          leetcode={leetcode}
+        />
 
-            <StatCard
-              title="Repositories"
-              value={data.repositories}
-            />
+        {/* Developer Summary */}
 
-            <StatCard
-              title="Followers"
-              value={data.followers}
-            />
+        {data && (
 
-            <StatCard
-              title="Stars"
-              value={data.stars}
-            />
-
-            {growth && (
-              <>
-                <StatCard
-                  title="Growth %"
-                  value={growth.growth_percent}
-                />
-
-                <StatCard
-                  title="Snapshots"
-                  value={growth.snapshots}
-                />
-              </>
-            )}
-          </div>
-
-          {codeforces && (
-  <>
-    <h2 className="text-2xl font-bold mb-4">
-      Codeforces Analytics
-    </h2>
-
-    <div
-      className="
-        grid
-        grid-cols-1
-        md:grid-cols-2
-        lg:grid-cols-4
-        gap-4
-        mb-8
-      "
-    >
-      <StatCard
-        title="CF Rating"
-        value={codeforces.rating}
-      />
-
-      <StatCard
-        title="Max Rating"
-        value={codeforces.max_rating}
-      />
-
-      <StatCard
-        title="Contribution"
-        value={codeforces.contribution}
-      />
-
-      <StatCard
-        title="Friends"
-        value={codeforces.friend_of_count}
-      />
-    </div>
-
-    <div
-      className="
-        bg-slate-800
-        border border-slate-700
-        rounded-2xl
-        p-6
-        mb-8
-      "
-    >
-      <p>
-        <strong>Handle:</strong>{" "}
-        {codeforces.handle}
-      </p>
-
-      <p>
-        <strong>Rank:</strong>{" "}
-        {codeforces.rank}
-      </p>
-
-      <p>
-        <strong>Max Rank:</strong>{" "}
-        {codeforces.max_rank}
-      </p>
-    </div>
-  </>
-)}
-
-          {/* Developer Info */}
           <div
             className="
               bg-slate-800
@@ -401,6 +158,7 @@ const analytics =
               mb-10
             "
           >
+
             <h2 className="text-2xl font-bold mb-4">
               Developer Summary
             </h2>
@@ -419,19 +177,27 @@ const analytics =
               <strong>Snapshots Stored:</strong>{" "}
               {data.snapshots_stored}
             </p>
+
           </div>
 
-          {/* Charts */}
+        )}
+
+        {/* Charts */}
+
+        {data && (
+
           <div
             className="
               grid
               grid-cols-1
               xl:grid-cols-2
               gap-8
+              mb-10
             "
           >
 
             {history.length > 0 && (
+
               <div
                 className="
                   bg-slate-800
@@ -440,6 +206,7 @@ const analytics =
                   p-6
                 "
               >
+
                 <h2 className="text-2xl font-bold mb-6">
                   Developer Score Trend
                 </h2>
@@ -447,10 +214,13 @@ const analytics =
                 <HistoryChart
                   data={history}
                 />
+
               </div>
+
             )}
 
             {breakdown && (
+
               <div
                 className="
                   bg-slate-800
@@ -459,6 +229,7 @@ const analytics =
                   p-6
                 "
               >
+
                 <h2 className="text-2xl font-bold mb-6">
                   Score Breakdown
                 </h2>
@@ -466,17 +237,29 @@ const analytics =
                 <ScoreBreakdownChart
                   data={breakdown}
                 />
+
               </div>
+
             )}
 
           </div>
-        </>
-      )}
+
+        )}
+
+        {/* Repository Table */}
+
+        {repositories.length > 0 && (
+
+          <RepositoryTable
+            repositories={repositories}
+          />
+
+        )}
+
+      </div>
 
     </div>
-
-  </div>
-);
+  );
 }
 
 export default App;

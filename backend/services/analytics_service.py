@@ -3,6 +3,10 @@ from services.github_service import (
     get_repo_statistics
 )
 
+from services.leetcode_service import (
+    get_leetcode_profile
+)
+
 from services.codeforces_service import (
     get_codeforces_profile
 )
@@ -17,7 +21,9 @@ from models.analytics import AnalyticsHistory
 
 def build_dashboard(
     github_username,
-    cf_handle=""
+    cf_handle="",
+    lc_handle=""
+
 ):
 
     profile = get_user_profile(
@@ -34,6 +40,13 @@ def build_dashboard(
         cf_profile = get_codeforces_profile(
             cf_handle
         )
+    
+    lc_profile = None
+
+    if lc_handle:
+        lc_profile = get_leetcode_profile(
+        lc_handle
+    )
 
     if profile is None or repo_stats is None:
         return None
@@ -48,16 +61,40 @@ def build_dashboard(
     cf_bonus = 0
 
     if cf_profile and cf_profile.get("rating"):
+        cf_bonus = min(
+            cf_profile["rating"] // 100,
+            40
+        )
 
-      cf_bonus = min(
-          cf_profile["rating"] // 100,
-          40
-      )
+    lc_bonus = 0
 
-      score = min(
-          score + cf_bonus,
-          100
-      )
+    if lc_profile:
+
+        solved = lc_profile["total_solved"]
+
+        if solved >= 1000:
+            lc_bonus += 20
+        elif solved >= 500:
+            lc_bonus += 15
+        elif solved >= 200:
+            lc_bonus += 10
+        elif solved >= 50:
+            lc_bonus += 5
+
+        rating = lc_profile["contest_rating"]
+
+        if rating:
+            if rating >= 2100:
+                lc_bonus += 10
+            elif rating >= 1800:
+                lc_bonus += 7
+            elif rating >= 1500:
+                lc_bonus += 5
+
+    score = min(
+        score + cf_bonus + lc_bonus,
+        100
+    )
 
     db = SessionLocal()
 
@@ -154,5 +191,6 @@ def build_dashboard(
             for r in records
         ],
 
-        "codeforces": cf_profile
-    }
+        "codeforces": cf_profile,
+        "leetcode": lc_profile
+    } 

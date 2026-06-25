@@ -8,7 +8,8 @@ from models.analytics import AnalyticsHistory
 
 from services.github_service import (
     get_user_profile,
-    get_repo_statistics
+    get_repo_statistics,
+    get_repositories
 )
 
 from services.score_service import calculate_score
@@ -239,12 +240,14 @@ def score_breakdown(username: str):
 @router.get("/analytics")
 def analytics(
     github: str,
-    cf: str = ""
+    cf: str = "",
+    leetcode: str = ""
 ):
 
     dashboard_data = build_dashboard(
     github,
-    cf
+    cf,
+    leetcode
 )
 
     if dashboard_data is None:
@@ -253,3 +256,15 @@ def analytics(
         }
 
     return dashboard_data
+
+@router.get("/repositories/{username}")
+def repositories(username: str):
+
+        repos = get_repositories(username)
+
+        if repos is None:
+            return {
+                "error": "User not found"
+            }
+
+        return repos

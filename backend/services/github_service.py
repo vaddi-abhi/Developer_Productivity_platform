@@ -76,3 +76,37 @@ def get_repo_statistics(username):
         "top_language": top_language,
         "most_starred_repo": most_starred_repo
     }
+
+def get_repositories(username):
+
+        url = f"https://api.github.com/users/{username}/repos"
+
+        response = requests.get(url)
+
+        if response.status_code != 200:
+            return None
+
+        repos = response.json()
+
+        repository_list = []
+
+        for repo in repos:
+
+            repository_list.append({
+
+                "name": repo.get("name"),
+
+                "description": repo.get("description"),
+
+                "language": repo.get("language"),
+
+                "stars": repo.get("stargazers_count"),
+
+                "forks": repo.get("forks_count"),
+
+                "updated_at": repo.get("updated_at"),
+
+                "url": repo.get("html_url")
+            })
+
+        return repository_list
