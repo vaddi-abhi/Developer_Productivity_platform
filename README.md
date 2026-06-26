@@ -197,54 +197,35 @@ Developer_Productivity_platform/
 
 # 📸 Screenshots
 
-## Dashboard
+## 🏠 Home Page
 
-> Add screenshot here
-
-```
-docs/screenshots/dashboard.png
-```
+<p align="center">
+  <img src="docs/screenshots/home.png" alt="Home Page" width="1000"/>
+</p>
 
 ---
 
-## Repository Analytics
+## 📊 Analytics Dashboard
 
-> Add screenshot here
-
-```
-docs/screenshots/repositories.png
-```
+<p align="center">
+  <img src="docs/screenshots/dashboard.png" alt="Dashboard" width="1000"/>
+</p>
 
 ---
 
-## Codeforces Statistics
+## 📂 Repository Analytics
 
-> Add screenshot here
-
-```
-docs/screenshots/codeforces.png
-```
+<p align="center">
+  <img src="docs/screenshots/repositories.png" alt="Repositories" width="1000"/>
+</p>
 
 ---
 
-## LeetCode Statistics
+## 📈 Developer Insights
 
-> Add screenshot here
-
-```
-docs/screenshots/leetcode.png
-```
-
----
-
-## Developer Score Trends
-
-> Add screenshot here
-
-```
-docs/screenshots/charts.png
-```
-
+<p align="center">
+  <img src="docs/screenshots/charts.png" alt="Charts" width="1000"/>
+</p>
 ---
 
 # ⚙ Installation
