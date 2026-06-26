@@ -6,17 +6,9 @@ from models.analytics import Base
 
 from routes.analytics import router
 from routes.leetcode import router as leetcode_router
-
-from routes.codeforces import (
-    router as codeforces_router
-)
-
-
-
+from routes.codeforces import router as codeforces_router
 
 app = FastAPI()
-
-from fastapi.middleware.cors import CORSMiddleware
 
 origins = [
     "http://localhost:5173",
@@ -34,10 +26,5 @@ app.add_middleware(
 Base.metadata.create_all(bind=engine)
 
 app.include_router(router)
-app.include_router(
-    leetcode_router
-)
-
-app.include_router(
-    codeforces_router
-)
+app.include_router(leetcode_router)
+app.include_router(codeforces_router)
