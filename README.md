@@ -197,15 +197,9 @@ Developer_Productivity_platform/
 
 # 📸 Screenshots
 
-## 🏠 Home Page
 
-<p align="center">
-  <img src="docs/screenshots/home.png" alt="Home Page" width="1000"/>
-</p>
 
----
-
-## 📊 Analytics Dashboard
+## 📊 Dashboard
 
 <p align="center">
   <img src="docs/screenshots/dashboard.png" alt="Dashboard" width="1000"/>
