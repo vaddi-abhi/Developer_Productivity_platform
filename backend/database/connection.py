@@ -1,20 +1,19 @@
+import os
 
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
-
-DATABASE_URL = (
-    "postgresql://postgres:Abhi%401289@localhost/devinsight"
+DATABASE_URL = os.getenv(
+    "DATABASE_URL",
+    "sqlite:///analytics.db"
 )
 
-engine = create_engine(DATABASE_URL)
-
-SessionLocal = sessionmaker(
-    autocommit=False,
-    autoflush=False,
-    bind=engine
+engine = create_engine(
+    DATABASE_URL,
+    connect_args={"check_same_thread": False}
+    if DATABASE_URL.startswith("sqlite")
+    else {}
 )
-from sqlalchemy.orm import sessionmaker
 
 SessionLocal = sessionmaker(
     autocommit=False,
